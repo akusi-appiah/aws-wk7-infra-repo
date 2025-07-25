@@ -1,0 +1,63 @@
+Description: 'Endpoints, ALB, Tasks and Database Security Groups'
+
+Parameters:
+  VpcId: { Type: String }
+  ContainerPort: { Type: Number }
+  VpcCidr: { Type: String, Default: '10.0.0.0/16'}
+
+Resources:
+  EndpointSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: VPC Endpoints Security Group
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref VpcCidr
+
+  AlbSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ALB Security Group
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      
+
+  TaskSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS Tasks Security Group
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref ContainerPort
+          ToPort: !Ref ContainerPort
+          SourceSecurityGroupId: !Ref AlbSG
+ 
+
+  # DBSecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: RDS Security Group
+  #     VpcId: !Ref VpcId
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         FromPort: 5432
+  #         ToPort: 5432
+  #         SourceSecurityGroupId: !Ref TaskSG
+
+Outputs:
+  EndpointSecurityGroup:
+    Value: !Ref EndpointSG
+  AlbSecurityGroup:
+    Value: !Ref AlbSG
+  TaskSecurityGroup:
+    Value: !Ref TaskSG
+  # DBSecurityGroup:
+  #   Value: !Ref DBSecurityGroup

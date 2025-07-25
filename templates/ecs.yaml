@@ -1,0 +1,149 @@
+Description: 'ECSCluster, ECR, TaskDefinition, ECSServices and AutoScaling infrastructure'
+
+Parameters:
+  ECSAppName: { Type: String }
+  ContainerPort: { Type: Number }
+  PrivateSubnetIds: { Type: CommaDelimitedList }
+  TaskSecurityGroup: { Type: String }
+  TaskExecutionRoleArn: { Type: String }
+  ApplicationAutoscalingRoleArn : {Type: String}
+  S3BucketName: { Type: String }
+  # DBEndpoint: { Type: String }
+  # DBSecretArn: { Type: String }
+  # DBSecretName: { Type: String }
+  BlueTargetGroupArn: { Type: String }
+  ContainerName:
+    Type: String
+    Default: "igallery-app"  
+
+Resources:
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref ECSAppName
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+
+  ECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref ECSAppName
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      EncryptionConfiguration:
+        EncryptionType: AES256
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    DependsOn: AppLogGroup
+    Properties:
+      Family: !Sub ${ECSAppName}-task
+      NetworkMode: awsvpc
+      RequiresCompatibilities: [FARGATE]
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !Ref TaskExecutionRoleArn
+      TaskRoleArn: !Ref TaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: !Ref ContainerName
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}:latest
+          Essential: true
+          PortMappings:
+            - ContainerPort: !Ref ContainerPort
+              Protocol: tcp
+          Environment:
+            # - Name: S3_BUCKET
+            #   Value: !Ref S3BucketName
+            # - Name: DB_HOST
+            #   Value: !Ref DBEndpoint
+            # - Name: DB_SECRET_ARN
+            #   Value: !Ref DBSecretArn
+            # - Name: DB_SECRET_NAME
+            #   Value: !Ref DBSecretName
+            - Name: S3_REGION
+              Value: !Ref AWS::Region
+            # - Name: DB_NAME
+            #   Value: appdb     
+            - Name: TABLE_NAME
+              Value: images
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            # - Name: DB_PORT
+            #   Value: '5432'
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: 'true'
+              awslogs-group: !Ref AppLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn: TaskDefinition
+    Properties:
+      ServiceName: !Sub ${ECSAppName}-service
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref TaskDefinition
+      DesiredCount: 0
+      LaunchType: FARGATE
+      DeploymentController:
+        Type: CODE_DEPLOY
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets: !Ref PrivateSubnetIds
+          SecurityGroups: [!Ref TaskSecurityGroup]
+          AssignPublicIp: DISABLED
+      LoadBalancers:
+        - ContainerName: !Ref ContainerName
+          ContainerPort: !Ref ContainerPort
+          TargetGroupArn: !Ref BlueTargetGroupArn
+      
+
+  AppLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/${ECSAppName}
+      RetentionInDays: 14
+
+  AutoScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    DependsOn: ECSService
+    Properties:
+      MaxCapacity: 4
+      MinCapacity: 2
+      ResourceId: !Sub service/${ECSCluster}/${ECSService.Name}
+      RoleARN: !Ref ApplicationAutoscalingRoleArn
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+
+  AutoScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: ScaleOnCPU
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref AutoScalingTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 50.0
+        ScaleInCooldown: 60
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+
+Outputs:
+  ECSClusterName:
+    Value: !Ref ECSCluster
+  ECSServiceName:
+    Value: !GetAtt ECSService.Name
+  ECRRepoName:
+    Value: !Ref ECRRepository
+  ECRRepoURI:
+    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}
+  ECRRepoArn:
+    Value: !GetAtt ECRRepository.Arn
+  TaskDefinitionArn:
+    Value: !Ref TaskDefinition
+  ContainerName:
+    Value: !Ref ContainerName

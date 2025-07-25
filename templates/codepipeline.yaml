@@ -1,0 +1,156 @@
+Description: "AWS CodePipeline for ECS Deployment"
+
+Parameters:
+  ECSAppName: { Type: String }
+  ECRRepoName: { Type: String }
+  ContainerName: { Type: String }
+  ContainerPort: { Type: Number }
+  TaskDefinitionArn: { Type: String }
+  CodeDeployApplication: { Type: String }  
+  ArtifactsBucketName: { Type: String }
+  ECSClusterName: { Type: String }
+  ECSServiceName: { Type: String }
+
+Resources:
+  PipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub codepipeline-${ECSAppName}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: codepipeline.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: PipelinePermissions
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecr:DescribeImages
+                  - ecs:*
+                  - codedeploy:*
+                  - s3:*
+                  - codebuild:*
+                Resource: "*"
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub ${ECSAppName}-deployment
+      RoleArn: !GetAtt PipelineRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactsBucketName
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: ECR_Source
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: ECR
+                Version: '1'
+              Configuration:
+                RepositoryName: !Ref ECRRepoName
+                ImageTag: latest
+              OutputArtifacts:
+                - Name: SourceOutput
+              RunOrder: 1
+
+        - Name: Build
+          Actions:
+          - Name: Update-Service-Count
+            ActionTypeId:
+              Category: Build
+              Owner: AWS
+              Provider: CodeBuild
+              Version: '1'
+            Configuration:
+              ProjectName: !Ref ServiceUpdateBuilder
+            InputArtifacts:
+              - Name: SourceOutput
+            OutputArtifacts:
+              - Name: BuildOutput 
+            RunOrder: 1
+
+        - Name: Deploy
+          Actions:
+            - Name: CodeDeploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CodeDeploy
+                Version: '1'
+              Configuration:
+                ApplicationName: !Ref CodeDeployApplication
+                DeploymentGroupName: !Sub ${ECSAppName}-dg
+              InputArtifacts:
+                - Name: BuildOutput
+              RunOrder: 1
+
+  ServiceUpdateBuilder:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${ECSAppName}-service-updater
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:4.0
+        EnvironmentVariables:
+          - Name: ECS_CLUSTER
+            Value: !Ref ECSClusterName
+          - Name: ECS_SERVICE
+            Value: !Ref ECSServiceName
+          - Name: TASK_DEFINITION_FAMILY
+            Value: !Sub ${ECSAppName}-task
+          - Name: CONTAINER_NAME
+            Value: !Ref ContainerName
+          - Name: CONTAINER_PORT
+            Value: !Ref ContainerPort
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: arn:aws:s3:::wk6buildsecbucket/buildsec-healthcheck.yaml
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: codebuild.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - ecs:DescribeServices
+                  - ecs:UpdateService
+                  - ecs:DescribeTaskDefinition
+                  - ecs:RegisterTaskDefinition
+                  - s3:*
+                Resource: "*"
+              - Effect: Allow
+                Action: ecs:DescribeClusters
+                Resource: !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${ECSClusterName}
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource: arn:aws:iam::796973518232:role/ecs-task-execution-prod
+                Condition:
+                  StringLike:
+                    iam:PassedToService: "ecs-tasks.amazonaws.com"
+
+Outputs:
+  PipelineName:
+    Value: !Ref Pipeline

@@ -1,0 +1,174 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Master template for TaskManager infrastructure'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: 'prod'
+    
+  VpcCidr:
+    Type: String
+    Default: '10.0.0.0/16'
+    
+  PublicSubnetCIDRs:
+    Type: CommaDelimitedList
+    Default: '10.0.1.0/24,10.0.2.0/24'
+    
+  PrivateSubnetCIDRs:
+    Type: CommaDelimitedList
+    Default: '10.0.101.0/24,10.0.102.0/24'
+    
+  AvailabilityZones:
+    Type: CommaDelimitedList
+    Default: 'eu-west-1a,eu-west-1b'
+    
+  ContainerPort:
+    Type: Number
+    MinValue: 1
+    MaxValue: 65535
+    Default: 3000
+    
+  ECSAppName:
+    Type: String
+    Default: 'taskman-app'
+
+  ContainerName:
+    Type: String
+    Default: "taskman-app"
+    Description: "Name of the container in ECS task definition"
+  
+  GitHubRepo:
+    Type: String
+    Default: "akusi-appiah/aws-wk7-todo-app"
+    Description: "GitHub repository for application code"
+
+  TemplatesURL:
+    Type: String
+    Default: 'https://taskman-prod-796973518232.s3.amazonaws.com/templates/' 
+
+Resources:
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplatesURL}vpc.yaml
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        VpcCidr: !Ref VpcCidr
+        PublicSubnetCIDRs: !Join [',', !Ref PublicSubnetCIDRs]
+        PrivateSubnetCIDRs: !Join [',', !Ref PrivateSubnetCIDRs]
+        AvailabilityZones: !Join [',', !Ref AvailabilityZones]
+
+  SecurityStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplatesURL}security-groups.yaml
+      Parameters:
+        VpcId: !GetAtt VPCStack.Outputs.VpcId
+        ContainerPort: !Ref ContainerPort
+        VpcCidr: !Ref VpcCidr
+
+  EndpointsStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: [SecurityStack,ECSStack]
+    Properties:
+      TemplateURL: !Sub ${TemplatesURL}endpoints.yaml
+      Parameters:
+        VpcId: !GetAtt VPCStack.Outputs.VpcId
+        PrivateRouteTableId: !GetAtt VPCStack.Outputs.PrivateRouteTableId
+        EndpointSecurityGroup: !GetAtt SecurityStack.Outputs.EndpointSecurityGroup
+        PrivateSubnetIds: !GetAtt VPCStack.Outputs.PrivateSubnets
+
+  S3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplatesURL}s3.yaml
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+
+  ALBStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplatesURL}alb.yaml
+      Parameters:
+        VpcId: !GetAtt VPCStack.Outputs.VpcId
+        PublicSubnetIds: !GetAtt VPCStack.Outputs.PublicSubnets
+        ContainerPort: !Ref ContainerPort
+        ECSAppName: !Ref ECSAppName
+        AlbSecurityGroup: !GetAtt SecurityStack.Outputs.AlbSecurityGroup
+
+  IAMStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplatesURL}iam.yaml
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        S3BucketArn: !GetAtt S3Stack.Outputs.S3BucketArn
+        DBSecretArn: !GetAtt RDSStack.Outputs.DBSecretArn
+
+  ECSStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ALBStack
+    Properties:
+      TemplateURL: !Sub ${TemplatesURL}ecs.yaml
+      Parameters:
+        ECSAppName: !Ref ECSAppName
+        ContainerPort: !Ref ContainerPort
+        PrivateSubnetIds: !GetAtt VPCStack.Outputs.PrivateSubnets
+        TaskSecurityGroup: !GetAtt SecurityStack.Outputs.TaskSecurityGroup
+        TaskExecutionRoleArn: !GetAtt IAMStack.Outputs.TaskExecutionRoleArn
+        ApplicationAutoscalingRoleArn: !GetAtt IAMStack.Outputs.ApplicationAutoscalingRoleArn
+        # S3BucketName: !GetAtt S3Stack.Outputs.S3BucketName
+        # DBEndpoint: !GetAtt RDSStack.Outputs.DBEndpoint
+        # DBSecretArn: !GetAtt RDSStack.Outputs.DBSecretArn
+        # DBSecretName: !GetAtt RDSStack.Outputs.DBSecretName
+        BlueTargetGroupArn: !GetAtt ALBStack.Outputs.BlueTargetGroupArn
+
+  CodeDeployStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ECSStack
+    Properties:
+      TemplateURL: !Sub ${TemplatesURL}codedeploy.yaml
+      Parameters:
+        ECSAppName: !Ref ECSAppName
+        ECSClusterName: !GetAtt ECSStack.Outputs.ECSClusterName
+        ECSServiceName: !GetAtt ECSStack.Outputs.ECSServiceName
+        BlueTargetGroupName: !GetAtt ALBStack.Outputs.BlueTargetGroupName
+        GreenTargetGroupName: !GetAtt ALBStack.Outputs.GreenTargetGroupName
+        AlbListenerArn: !GetAtt ALBStack.Outputs.AlbListenerArn
+        CodeDeployRoleArn: !GetAtt IAMStack.Outputs.CodeDeployRoleArn
+
+
+  PipelineStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: [ECSStack, CodeDeployStack, S3Stack]
+    Properties:
+      TemplateURL: !Sub ${TemplatesURL}codepipeline.yaml
+      Parameters:
+        ECSAppName: !Ref ECSAppName
+        ECRRepoName: !GetAtt ECSStack.Outputs.ECRRepoName
+        ContainerName: !Ref ContainerName
+        ContainerPort: !Ref ContainerPort
+        TaskDefinitionArn: !GetAtt ECSStack.Outputs.TaskDefinitionArn
+        CodeDeployApplication: !GetAtt CodeDeployStack.Outputs.CodeDeployApplicationName
+        ArtifactsBucketName: !GetAtt S3Stack.Outputs.ArtifactsBucketName
+        ECSClusterName: !GetAtt ECSStack.Outputs.ECSClusterName
+        ECSServiceName: !GetAtt ECSStack.Outputs.ECSServiceName
+
+  EventBridgeStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: PipelineStack
+    Properties:
+      TemplateURL: !Sub ${TemplatesURL}eventbridge.yaml
+      Parameters:
+        ECRRepoArn: !GetAtt ECSStack.Outputs.ECRRepoArn
+        PipelineName: !GetAtt PipelineStack.Outputs.PipelineName
+
+Outputs:
+  LoadBalancerDNS:
+    Value: !GetAtt ALBStack.Outputs.ALBDnsName
+  S3BucketName:
+    Value: !GetAtt S3Stack.Outputs.S3BucketName
+  # RDSSecretArn:
+  #   Value: !GetAtt RDSStack.Outputs.DBSecretArn
+  ECRRepoURI:
+    Value: !GetAtt ECSStack.Outputs.ECRRepoURI`
