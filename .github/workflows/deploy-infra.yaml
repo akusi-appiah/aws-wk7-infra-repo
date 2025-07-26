@@ -27,6 +27,7 @@ jobs:
     - name: Create S3 bucket if not exists
       id: create-bucket
       run: |
+        BUCKET_NAME="taskman-prod-${{ secrets.AWS_ACCOUNT_ID }}"
         if aws s3 ls "s3://$BUCKET_NAME" 2>/dev/null; then
           echo "Bucket already exists"
           echo "bucket_exists=true" >> $GITHUB_OUTPUT
