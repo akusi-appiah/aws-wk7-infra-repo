@@ -7,16 +7,6 @@ Parameters:
   PrivateSubnetIds: { Type: CommaDelimitedList } 
 
 Resources:
-  # S3GatewayEndpoint:
-  #   Type: AWS::EC2::VPCEndpoint
-  #   Properties:
-  #     ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
-  #     VpcId: !Ref VpcId
-  #     RouteTableIds: [!Ref PrivateRouteTableId]
-  #     VpcEndpointType: Gateway
-  #     PolicyDocument:
-  #       Statement: [{ Action: "s3:*", Effect: Allow, Principal: "*", Resource: "*" }]
-
   ECRDockerEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -46,16 +36,6 @@ Resources:
       SecurityGroupIds: [!Ref EndpointSecurityGroup]
       SubnetIds: !Ref PrivateSubnetIds
       PrivateDnsEnabled: true
-
-  # SecretsManagerEndpoint:
-  #   Type: AWS::EC2::VPCEndpoint
-  #   Properties:
-  #     ServiceName: !Sub com.amazonaws.${AWS::Region}.secretsmanager
-  #     VpcEndpointType: Interface
-  #     VpcId: !Ref VpcId
-  #     SecurityGroupIds: [!Ref EndpointSecurityGroup]
-  #     SubnetIds: !Ref PrivateSubnetIds
-  #     PrivateDnsEnabled: true
 
   DynamoDBEndpoint:
     Type: AWS::EC2::VPCEndpoint

@@ -101,7 +101,6 @@ Resources:
       TemplateURL: !Sub ${TemplatesURL}iam.yaml
       Parameters:
         EnvironmentName: !Ref EnvironmentName
-        S3BucketArn: !GetAtt S3Stack.Outputs.S3BucketArn
         DynamoDBTableArn: !Ref DynamoDBTableArn
 
   ECSStack:
@@ -162,7 +161,5 @@ Resources:
 Outputs:
   LoadBalancerDNS:
     Value: !GetAtt ALBStack.Outputs.ALBDnsName
-  S3BucketName:
-    Value: !GetAtt S3Stack.Outputs.S3BucketName
   ECRRepoURI:
     Value: !GetAtt ECSStack.Outputs.ECRRepoURI`

@@ -2,7 +2,6 @@ Description: 'IAM roles defined for TaskExecution and CodeDeploy'
 
 Parameters:
   EnvironmentName: { Type: String }
-  S3BucketArn: { Type: String }
   DynamoDBTableArn: { Type: String, Default: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/prod-todo-table" }
 
 Resources:
@@ -48,8 +47,9 @@ Resources:
                   - s3:GetObject
                   - s3:ListBucket
                 Resource: 
-                  - !Sub ${S3BucketArn}/*
-                  - !Ref S3BucketArn
+                  - !Sub arn:aws:s3:::taskman-prod-${AWS::AccountId}/*
+                  - !Sub arn:aws:s3:::taskman-prod-${AWS::AccountId}
+
         - PolicyName: LoggingAccess
           PolicyDocument:
             Statement:

@@ -39,18 +39,6 @@ Resources:
           FromPort: !Ref ContainerPort
           ToPort: !Ref ContainerPort
           SourceSecurityGroupId: !Ref AlbSG
- 
-
-  # DBSecurityGroup:
-  #   Type: AWS::EC2::SecurityGroup
-  #   Properties:
-  #     GroupDescription: RDS Security Group
-  #     VpcId: !Ref VpcId
-  #     SecurityGroupIngress:
-  #       - IpProtocol: tcp
-  #         FromPort: 5432
-  #         ToPort: 5432
-  #         SourceSecurityGroupId: !Ref TaskSG
 
 Outputs:
   EndpointSecurityGroup:
@@ -59,5 +47,3 @@ Outputs:
     Value: !Ref AlbSG
   TaskSecurityGroup:
     Value: !Ref TaskSG
-  # DBSecurityGroup:
-  #   Value: !Ref DBSecurityGroup

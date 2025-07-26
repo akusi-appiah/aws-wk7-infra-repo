@@ -1,0 +1,67 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'infra-master.yaml'
+      - 'templates/**'
+
+jobs:
+  deploy-infrastructure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        mask-aws-account-id: no
+        
+    - name: Create S3 bucket if not exists
+      id: create-bucket
+      run: |
+        if aws s3 ls "s3://$BUCKET_NAME" 2>/dev/null; then
+          echo "Bucket already exists"
+          echo "bucket_exists=true" >> $GITHUB_OUTPUT
+        else
+          aws s3 mb s3://$BUCKET_NAME 
+          echo "Created new bucket"
+          echo "bucket_exists=false" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Upload templates to S3
+      run: |
+        # Upload all templates
+        aws s3 sync ./ ss3://$BUCKET_NAME/ \
+          --acl bucket-owner-full-control \
+          --exclude "*" \
+          --include "infra-master.yaml" \
+          --include "templates/*.yaml"
+
+
+    - name: Replace Placeholders in taskdef.json
+      run: |
+        sed -i "s|<TASK_EXECUTION_ROLE_ARN>|${{ secrets.TASK_EXECUTION_ROLE_ARN }}|g" deployment/taskdef.json
+        sed -i "s|<ECR_REPO_URI>|${{ secrets.ECR_REPO_URI }}|g" deployment/taskdef.json
+        sed -i "s|<AWS_REGION>|eu-west-1|g" deployment/taskdef.json
+
+    - name: Replace Placeholders in appspec.yaml
+      run: |
+        sed -i "s|<TASK_DEFINITION_ARN>|${{ secrets.TASK_DEFINITION_ARN }}|g" deployment/appspec.yaml
+
+    - name: Zip and Upload Deployment Files to S3
+      run: |
+        cd deployment
+        zip -r deployment-files.zip appspec.yaml taskdef.json
+        aws s3 cp deployment-files.zip s3://taskman-prod-${{ secrets.AWS_ACCOUNT_ID }}/deployment-files.zip
+        
+
+        
+    

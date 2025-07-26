@@ -2,25 +2,7 @@ Description: 'AppsS3 and Artifacts Buckets'
 
 Parameters:
   EnvironmentName: { Type: String }
-
 Resources:
-  AppS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub taskman-${EnvironmentName}-${AWS::AccountId}
-      AccessControl: Private
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      VersioningConfiguration:
-        Status: Enabled
-
   ArtifactsBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -30,9 +12,5 @@ Resources:
         Status: Enabled
 
 Outputs:
-  S3BucketName:
-    Value: !Ref AppS3Bucket
-  S3BucketArn:
-    Value: !GetAtt AppS3Bucket.Arn
   ArtifactsBucketName:
     Value: !Ref ArtifactsBucket

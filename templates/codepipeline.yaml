@@ -39,8 +39,8 @@ Resources:
                   - s3:GetObject
                   - s3:ListBucket
                 Resource:
-                  - !Sub arn:aws:s3:::${ArtifactsBucketName}/*
-                  - !Sub arn:aws:s3:::${ArtifactsBucketName}
+                  - !Sub arn:aws:s3:::taskman-prod-${AWS::AccountId}/*
+                  - !Sub arn:aws:s3:::taskman-prod-${AWS::AccountId}
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -60,7 +60,7 @@ Resources:
                 Provider: S3
                 Version: '1'
               Configuration:
-                S3Bucket: !Ref ArtifactsBucketName
+                S3Bucket: !Sub taskman-prod-${AWS::AccountId}
                 S3ObjectKey: deployment-files.zip
                 PollForSourceChanges: false
               OutputArtifacts:
