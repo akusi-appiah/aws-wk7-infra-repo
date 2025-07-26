@@ -38,6 +38,7 @@ Resources:
                   - dynamodb:DeleteItem
                   - dynamodb:Scan
                   - dynamodb:DescribeTable
+                  - dynamodb:ListTables
                 Resource: !Ref DynamoDBTableArn
         - PolicyName: S3Access
           PolicyDocument:
