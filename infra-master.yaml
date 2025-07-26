@@ -37,10 +37,9 @@ Parameters:
     Default: "taskman-app"
     Description: "Name of the container in ECS task definition"
   
-  GitHubRepo:
+  DynamoDBTableArn:
     Type: String
-    Default: "akusi-appiah/aws-wk7-todo-app"
-    Description: "GitHub repository for application code"
+    Default: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/prod-todo-table"
 
   TemplatesURL:
     Type: String
@@ -103,11 +102,11 @@ Resources:
       Parameters:
         EnvironmentName: !Ref EnvironmentName
         S3BucketArn: !GetAtt S3Stack.Outputs.S3BucketArn
-        DBSecretArn: !GetAtt RDSStack.Outputs.DBSecretArn
+        DynamoDBTableArn: !Ref DynamoDBTableArn
 
   ECSStack:
     Type: AWS::CloudFormation::Stack
-    DependsOn: ALBStack
+    DependsOn: [ALBStack, IAMStack]
     Properties:
       TemplateURL: !Sub ${TemplatesURL}ecs.yaml
       Parameters:
@@ -117,11 +116,8 @@ Resources:
         TaskSecurityGroup: !GetAtt SecurityStack.Outputs.TaskSecurityGroup
         TaskExecutionRoleArn: !GetAtt IAMStack.Outputs.TaskExecutionRoleArn
         ApplicationAutoscalingRoleArn: !GetAtt IAMStack.Outputs.ApplicationAutoscalingRoleArn
-        # S3BucketName: !GetAtt S3Stack.Outputs.S3BucketName
-        # DBEndpoint: !GetAtt RDSStack.Outputs.DBEndpoint
-        # DBSecretArn: !GetAtt RDSStack.Outputs.DBSecretArn
-        # DBSecretName: !GetAtt RDSStack.Outputs.DBSecretName
         BlueTargetGroupArn: !GetAtt ALBStack.Outputs.BlueTargetGroupArn
+        ContainerName: !Ref ContainerName
 
   CodeDeployStack:
     Type: AWS::CloudFormation::Stack
@@ -168,7 +164,5 @@ Outputs:
     Value: !GetAtt ALBStack.Outputs.ALBDnsName
   S3BucketName:
     Value: !GetAtt S3Stack.Outputs.S3BucketName
-  # RDSSecretArn:
-  #   Value: !GetAtt RDSStack.Outputs.DBSecretArn
   ECRRepoURI:
     Value: !GetAtt ECSStack.Outputs.ECRRepoURI`

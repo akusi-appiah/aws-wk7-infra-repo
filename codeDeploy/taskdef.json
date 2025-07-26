@@ -1,0 +1,41 @@
+{
+  "family": "taskman-app-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "<TASK_EXECUTION_ROLE_ARN>",
+  "taskRoleArn": "<TASK_EXECUTION_ROLE_ARN>",
+  "containerDefinitions": [
+    {
+      "name": "taskman-app",
+      "image": "<ECR_REPO_URI>:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "TODO_TABLE_NAME",
+          "value": "prod-todo-table"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "<AWS_REGION>"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-create-group": "true",
+          "awslogs-group": "/ecs/taskman-app",
+          "awslogs-region": "<AWS_REGION>",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

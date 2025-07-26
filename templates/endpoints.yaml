@@ -56,3 +56,13 @@ Resources:
   #     SecurityGroupIds: [!Ref EndpointSecurityGroup]
   #     SubnetIds: !Ref PrivateSubnetIds
   #     PrivateDnsEnabled: true
+
+  DynamoDBEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.dynamodb"
+      VpcEndpointType: Interface
+      VpcId: !Ref VpcId
+      SecurityGroupIds: [!Ref EndpointSecurityGroup]
+      SubnetIds: !Ref PrivateSubnetIds
+      PrivateDnsEnabled: true

@@ -6,15 +6,11 @@ Parameters:
   PrivateSubnetIds: { Type: CommaDelimitedList }
   TaskSecurityGroup: { Type: String }
   TaskExecutionRoleArn: { Type: String }
-  ApplicationAutoscalingRoleArn : {Type: String}
-  S3BucketName: { Type: String }
-  # DBEndpoint: { Type: String }
-  # DBSecretArn: { Type: String }
-  # DBSecretName: { Type: String }
+  ApplicationAutoscalingRoleArn: { Type: String }
   BlueTargetGroupArn: { Type: String }
   ContainerName:
     Type: String
-    Default: "igallery-app"  
+    Default: "taskman-app" 
 
 Resources:
   ECSCluster:
@@ -53,24 +49,10 @@ Resources:
             - ContainerPort: !Ref ContainerPort
               Protocol: tcp
           Environment:
-            # - Name: S3_BUCKET
-            #   Value: !Ref S3BucketName
-            # - Name: DB_HOST
-            #   Value: !Ref DBEndpoint
-            # - Name: DB_SECRET_ARN
-            #   Value: !Ref DBSecretArn
-            # - Name: DB_SECRET_NAME
-            #   Value: !Ref DBSecretName
-            - Name: S3_REGION
-              Value: !Ref AWS::Region
-            # - Name: DB_NAME
-            #   Value: appdb     
-            - Name: TABLE_NAME
-              Value: images
+            - Name: TODO_TABLE_NAME
+              Value: prod-todo-table
             - Name: AWS_REGION
               Value: !Ref AWS::Region
-            # - Name: DB_PORT
-            #   Value: '5432'
           LogConfiguration:
             LogDriver: awslogs
             Options:
