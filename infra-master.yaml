@@ -161,5 +161,3 @@ Resources:
 Outputs:
   LoadBalancerDNS:
     Value: !GetAtt ALBStack.Outputs.ALBDnsName
-  ECRRepoURI:
-    Value: !GetAtt ECSStack.Outputs.ECRRepoURI`

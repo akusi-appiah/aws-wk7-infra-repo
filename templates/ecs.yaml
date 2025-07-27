@@ -121,8 +121,6 @@ Outputs:
     Value: !GetAtt ECSService.Name
   ECRRepoName:
     Value: !Ref ECRRepository
-  ECRRepoURI:
-    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}
   ECRRepoArn:
     Value: !GetAtt ECRRepository.Arn
   TaskDefinitionArn:
