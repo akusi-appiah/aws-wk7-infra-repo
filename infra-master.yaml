@@ -51,7 +51,7 @@ Resources:
     Properties:
       TemplateURL: !Sub "${TemplatesURL}vpc.yaml"
       Parameters:
-        EnvironmentName: !Ref EnvironmentName
+        # EnvironmentName: !Ref EnvironmentName
         # VpcCidr: !Ref VpcCidr
         # PublicSubnetCIDRs: !Join [',', !Ref PublicSubnetCIDRs]
         # PrivateSubnetCIDRs: !Join [',', !Ref PrivateSubnetCIDRs]
