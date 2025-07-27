@@ -46,25 +46,25 @@ Parameters:
     Default: 'https://taskman-prod-796973518232.s3.amazonaws.com/templates/' 
 
 Resources:
-  VPCStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplatesURL}vpc.yaml"
-      Parameters:
-        # EnvironmentName: !Ref EnvironmentName
-        # VpcCidr: !Ref VpcCidr
-        # PublicSubnetCIDRs: !Join [',', !Ref PublicSubnetCIDRs]
-        # PrivateSubnetCIDRs: !Join [',', !Ref PrivateSubnetCIDRs]
-        # AvailabilityZones: !Join [',', !Ref AvailabilityZones]
+  # VPCStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub "${TemplatesURL}vpc.yaml"
+  #     Parameters:
+  #       EnvironmentName: !Ref EnvironmentName
+  #       VpcCidr: !Ref VpcCidr
+  #       PublicSubnetCIDRs: !Join [',', !Ref PublicSubnetCIDRs]
+  #       PrivateSubnetCIDRs: !Join [',', !Ref PrivateSubnetCIDRs]
+  #       AvailabilityZones: !Join [',', !Ref AvailabilityZones]
 
-#   SecurityStack:
-#     Type: AWS::CloudFormation::Stack
-#     Properties:
-#       TemplateURL: !Sub "${TemplatesURL}security-groups.yaml"
-#       Parameters:
-#         VpcId: !GetAtt VPCStack.Outputs.VpcId
-#         ContainerPort: !Ref ContainerPort
-#         VpcCidr: !Ref VpcCidr
+  # SecurityStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub "${TemplatesURL}security-groups.yaml"
+  #     Parameters:
+  #       VpcId: !GetAtt VPCStack.Outputs.VpcId
+  #       ContainerPort: !Ref ContainerPort
+  #       VpcCidr: !Ref VpcCidr
 
 #   EndpointsStack:
 #     Type: AWS::CloudFormation::Stack
@@ -77,12 +77,12 @@ Resources:
 #         EndpointSecurityGroup: !GetAtt SecurityStack.Outputs.EndpointSecurityGroup
 #         PrivateSubnetIds: !GetAtt VPCStack.Outputs.PrivateSubnets
 
-#   S3Stack:
-#     Type: AWS::CloudFormation::Stack
-#     Properties:
-#       TemplateURL: !Sub "${TemplatesURL}s3.yaml"
-#       Parameters:
-#         EnvironmentName: !Ref EnvironmentName
+  S3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplatesURL}s3.yaml"
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
 
 #   ALBStack:
 #     Type: AWS::CloudFormation::Stack
@@ -95,13 +95,13 @@ Resources:
 #         ECSAppName: !Ref ECSAppName
 #         AlbSecurityGroup: !GetAtt SecurityStack.Outputs.AlbSecurityGroup
 
-#   IAMStack:
-#     Type: AWS::CloudFormation::Stack
-#     Properties:
-#       TemplateURL: !Sub "${TemplatesURL}iam.yaml"
-#       Parameters:
-#         EnvironmentName: !Ref EnvironmentName
-#         DynamoDBTableArn: !Ref DynamoDBTableArn
+  IAMStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplatesURL}iam.yaml"
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        DynamoDBTableArn: !Ref DynamoDBTableArn
 
 #   ECSStack:
 #     Type: AWS::CloudFormation::Stack
