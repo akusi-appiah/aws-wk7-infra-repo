@@ -40,7 +40,7 @@ jobs:
     - name: Upload templates to S3
       run: |
         # Upload all templates
-        aws s3 sync ./ ss3://$BUCKET_NAME/ \
+        aws s3 sync ./ s3://$BUCKET_NAME/ \
           --acl bucket-owner-full-control \
           --exclude "*" \
           --include "infra-master.yaml" \
