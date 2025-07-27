@@ -145,6 +145,7 @@ Resources:
         ContainerPort: !Ref ContainerPort
         TaskDefinitionArn: !GetAtt ECSStack.Outputs.TaskDefinitionArn
         CodeDeployApplication: !GetAtt CodeDeployStack.Outputs.CodeDeployApplicationName
+        CodeDeployServiceRoleArn: !GetAtt IAMStack.Outputs.CodeDeployRoleArn
         ArtifactsBucketName: !GetAtt S3Stack.Outputs.ArtifactsBucketName
         ECSClusterName: !GetAtt ECSStack.Outputs.ECSClusterName
         ECSServiceName: !GetAtt ECSStack.Outputs.ECSServiceName

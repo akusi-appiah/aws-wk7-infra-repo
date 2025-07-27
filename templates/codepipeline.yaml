@@ -7,6 +7,7 @@ Parameters:
   ContainerPort: { Type: Number }
   TaskDefinitionArn: { Type: String }
   CodeDeployApplication: { Type: String }
+  CodeDeployServiceRoleArn: { Type: String }
   ArtifactsBucketName: { Type: String }
   ECSClusterName: { Type: String }
   ECSServiceName: { Type: String }
@@ -29,18 +30,33 @@ Resources:
               - Effect: Allow
                 Action:
                   - ecr:DescribeImages
-                  - ecs:*
-                  - codedeploy:*
-                  - s3:GetObject
-                  - s3:ListBucket
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
                 Resource: "*"
+
               - Effect: Allow
                 Action:
                   - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub arn:aws:s3:::${ArtifactsBucketName}
+                  - !Sub arn:aws:s3:::${ArtifactsBucketName}/*
+
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
                   - s3:ListBucket
                 Resource:
                   - !Sub arn:aws:s3:::taskman-prod-${AWS::AccountId}/*
                   - !Sub arn:aws:s3:::taskman-prod-${AWS::AccountId}
+
+              - Effect: Allow
+                Action: iam:PassRole
+                Resource: !Ref CodeDeployServiceRoleArn
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
