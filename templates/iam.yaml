@@ -2,13 +2,17 @@ Description: 'IAM roles defined for TaskExecution and CodeDeploy'
 
 Parameters:
   EnvironmentName: { Type: String }
-  DynamoDBTableArn: { Type: String, Default: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/prod-todo-table" }
+  DynamoDBTableName:  # Replaced DynamoDBTableArn with TableName
+    Type: String
+    Default: prod-todo-table  # Simple string default (no intrinsic function)
+
+  # DynamoDBTableArn: { Type: String, Default: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/prod-todo-table" }
 
 Resources:
   TaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ecs-task-execution-${EnvironmentName}
+      RoleName: !Sub "ecs-task-execution-${EnvironmentName}"
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -39,7 +43,7 @@ Resources:
                   - dynamodb:Scan
                   - dynamodb:DescribeTable
                   - dynamodb:ListTables
-                Resource: !Ref DynamoDBTableArn
+                Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${DynamoDBTableName}"
         - PolicyName: S3Access
           PolicyDocument:
             Statement:
@@ -48,8 +52,8 @@ Resources:
                   - s3:GetObject
                   - s3:ListBucket
                 Resource: 
-                  - !Sub arn:aws:s3:::taskman-prod-${AWS::AccountId}/*
-                  - !Sub arn:aws:s3:::taskman-prod-${AWS::AccountId}
+                  - !Sub "arn:aws:s3:::taskman-${EnvironmentName}-${AWS::AccountId}"
+                  - !Sub "arn:aws:s3:::taskman-${EnvironmentName}-${AWS::AccountId}/*"
 
         - PolicyName: LoggingAccess
           PolicyDocument:
