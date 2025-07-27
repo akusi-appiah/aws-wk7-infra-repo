@@ -95,13 +95,13 @@ Resources:
 #         ECSAppName: !Ref ECSAppName
 #         AlbSecurityGroup: !GetAtt SecurityStack.Outputs.AlbSecurityGroup
 
-  IAMStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplatesURL}iam.yaml"
-      Parameters:
-        EnvironmentName: !Ref EnvironmentName
-        DynamoDBTableArn: !Ref DynamoDBTableArn
+  # IAMStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub "${TemplatesURL}iam.yaml"
+  #     Parameters:
+  #       EnvironmentName: !Ref EnvironmentName
+  #       DynamoDBTableArn: !Ref DynamoDBTableArn
 
 #   ECSStack:
 #     Type: AWS::CloudFormation::Stack
