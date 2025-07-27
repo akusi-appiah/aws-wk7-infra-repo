@@ -26,7 +26,7 @@ Parameters:
     Type: Number
     MinValue: 1
     MaxValue: 65535
-    Default: 3000
+    Default: "3000"
     
   ECSAppName:
     Type: String
