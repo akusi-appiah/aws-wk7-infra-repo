@@ -30,7 +30,6 @@ Resources:
                   - ecr:GetDownloadUrlForLayer
                   - ecr:BatchGetImage
                 Resource: "*"
-
         - PolicyName: DynamoDBAccess
           PolicyDocument:
             Statement:
@@ -98,6 +97,8 @@ Resources:
           - Effect: Allow
             Principal: { Service: codedeploy.amazonaws.com }
             Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS
       Policies:
       - PolicyName: CustomECSPermissions
         PolicyDocument:

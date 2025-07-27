@@ -11,15 +11,15 @@ Parameters:
     Default: '10.0.0.0/16'
     
   PublicSubnetCIDRs:
-    Type: String
+    Type: CommaDelimitedList
     Default: '10.0.1.0/24,10.0.2.0/24'
     
   PrivateSubnetCIDRs:
-    Type: String
+    Type: CommaDelimitedList
     Default: '10.0.101.0/24,10.0.102.0/24'
     
   AvailabilityZones:
-    Type: String
+    Type: CommaDelimitedList
     Default: 'eu-west-1a,eu-west-1b'
     
   ContainerPort:
@@ -53,9 +53,9 @@ Resources:
       Parameters:
         EnvironmentName: !Ref EnvironmentName
         VpcCidr: !Ref VpcCidr
-        PublicSubnetCIDRs: !Ref PublicSubnetCIDRs
-        PrivateSubnetCIDRs: !Ref PrivateSubnetCIDRs
-        AvailabilityZones: !Ref AvailabilityZones
+        PublicSubnetCIDRs: !Join [',', !Ref PublicSubnetCIDRs]
+        PrivateSubnetCIDRs: !Join [',', !Ref PrivateSubnetCIDRs]
+        AvailabilityZones: !Join [',', !Ref AvailabilityZones]
 
   SecurityStack:
     Type: AWS::CloudFormation::Stack
