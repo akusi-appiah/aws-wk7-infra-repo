@@ -41,6 +41,13 @@ jobs:
           echo "Created new bucket"
           echo "bucket_exists=false" >> $GITHUB_OUTPUT
         fi
+
+    - name: Validate CloudFormation Templates
+      run: |
+        aws cloudformation validate-template --template-body file://infra-master.yaml
+        for template in templates/*.yaml; do
+          aws cloudformation validate-template --template-body file://$template
+        done
         
     - name: Upload templates to S3
       run: |
