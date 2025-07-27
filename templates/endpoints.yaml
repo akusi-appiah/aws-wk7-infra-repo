@@ -8,14 +8,14 @@ Parameters:
 
 Resources:
 
-S3Endpoint:
-  Type: AWS::EC2::VPCEndpoint
-  Properties:
-    ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
-    VpcEndpointType: Gateway
-    VpcId: !Ref VpcId
-    RouteTableIds: [!Ref PrivateRouteTableId]
- 
+  S3GatewayEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      VpcEndpointType: Gateway
+      VpcId: !Ref VpcId
+      RouteTableIds: [!Ref PrivateRouteTableId]
+  
   ECRDockerEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
