@@ -1,14 +1,14 @@
 template-file-path: infra-master.yaml
 parameters:
-  VpcCidr: 10.0.0.0/16
-  EnvironmentName: prod
-  ContainerName: taskman-app
-  AvailabilityZones: eu-west-1a,eu-west-1b
-  ContainerPort: '3000'
-  PrivateSubnetCIDRs: 10.0.101.0/24,10.0.102.0/24
-  TemplatesURL: https://taskman-prod-796973518232.s3.amazonaws.com/templates/
-  PublicSubnetCIDRs: 10.0.1.0/24,10.0.2.0/24
-  ECSAppName: taskman-app
-  GitHubRepo: akusi-appiah/aws-wk7-infra-repo
+  VpcCidr: "10.0.0.0/16"
+  EnvironmentName: "prod"
+  ContainerName: "taskman-app"
+  AvailabilityZones: "eu-west-1a,eu-west-1b"
+  ContainerPort: "3000"
+  PrivateSubnetCIDRs: "10.0.101.0/24,10.0.102.0/24"
+  TemplatesURL: "https://taskman-prod-796973518232.s3.amazonaws.com/templates/"
+  PublicSubnetCIDRs: "10.0.1.0/24,10.0.2.0/24"
+  ECSAppName: "taskman-app"
+  GitHubRepo: "akusi-appiah/aws-wk7-infra-repo"
 tags:
-  Project: TaskManager
+  Project: "TaskManager"
