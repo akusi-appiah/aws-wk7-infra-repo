@@ -15,6 +15,11 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Run CloudFormation Linter
+      uses: scottbrenner/cfn-lint-action@v2
+      with:
+        command: cfn-lint -t templates/*.yml
       
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -41,6 +46,9 @@ jobs:
           echo "Created new bucket"
           echo "bucket_exists=false" >> $GITHUB_OUTPUT
         fi
+
+        echo "Enabling bucket versioning"
+        aws s3api put-bucket-versioning --bucket $BUCKET_NAME --versioning-configuration Status=Enabled
 
     - name: Validate CloudFormation Templates
       run: |
