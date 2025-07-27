@@ -1,4 +1,5 @@
-Description: 'Endpoints, ALB, Tasks and Database Security Groups'
+Description: 'Endpoints, ALB, and Tasks Security Groups'   
+
 
 Parameters:
   VpcId: { Type: String }
