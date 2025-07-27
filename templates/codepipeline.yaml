@@ -33,6 +33,7 @@ Resources:
                   - ecr:GetDownloadUrlForLayer
                   - ecr:GetAuthorizationToken
                   - ecr:BatchCheckLayerAvailability
+                  - codeDeploy:*
                 Resource: "*"
 
               - Effect: Allow
