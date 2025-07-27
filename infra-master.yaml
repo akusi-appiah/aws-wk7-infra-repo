@@ -52,10 +52,10 @@ Resources:
       TemplateURL: !Sub "${TemplatesURL}vpc.yaml"
       Parameters:
         EnvironmentName: !Ref EnvironmentName
-        VpcCidr: !Ref VpcCidr
-        PublicSubnetCIDRs: !Join [',', !Ref PublicSubnetCIDRs]
-        PrivateSubnetCIDRs: !Join [',', !Ref PrivateSubnetCIDRs]
-        AvailabilityZones: !Join [',', !Ref AvailabilityZones]
+        # VpcCidr: !Ref VpcCidr
+        # PublicSubnetCIDRs: !Join [',', !Ref PublicSubnetCIDRs]
+        # PrivateSubnetCIDRs: !Join [',', !Ref PrivateSubnetCIDRs]
+        # AvailabilityZones: !Join [',', !Ref AvailabilityZones]
 
 #   SecurityStack:
 #     Type: AWS::CloudFormation::Stack
