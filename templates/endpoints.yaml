@@ -41,8 +41,6 @@ Resources:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       ServiceName: !Sub "com.amazonaws.${AWS::Region}.dynamodb"
-      VpcEndpointType: Interface
+      VpcEndpointType: Gateway
       VpcId: !Ref VpcId
-      SecurityGroupIds: [!Ref EndpointSecurityGroup]
-      SubnetIds: !Ref PrivateSubnetIds
-      PrivateDnsEnabled: true
+      RouteTableIds: [!Ref PrivateRouteTableId]
