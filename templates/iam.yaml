@@ -98,8 +98,6 @@ Resources:
           - Effect: Allow
             Principal: { Service: codedeploy.amazonaws.com }
             Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS
       Policies:
       - PolicyName: CustomECSPermissions
         PolicyDocument:
@@ -107,21 +105,11 @@ Resources:
           Statement:
             - Effect: Allow
               Action:
-                - ecs:UpdateService
-                - ecs:DescribeServices
-                - ecs:DescribeTaskDefinition
-              Resource: "*"
-            # ALB support if using blue/green
-            - Effect: Allow
-              Action:
-                - elasticloadbalancing:DescribeTargetGroups
-                - elasticloadbalancing:RegisterTargets
-                - elasticloadbalancing:DeregisterTargets
-              Resource: "*"
-
-            # Allow passing ECS task execution roles
-            - Effect: Allow
-              Action: iam:PassRole
+                - ecs:*
+                - elasticloadbalancing:*
+                - cloudwatch:*
+                - s3:*
+                - iam:PassRole
               Resource: "*"
 
 Outputs:
