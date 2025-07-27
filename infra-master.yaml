@@ -45,17 +45,17 @@ Parameters:
     Type: String
     Default: 'https://taskman-prod-796973518232.s3.amazonaws.com/templates/' 
 
-# Resources:
-#   VPCStack:
-#     Type: AWS::CloudFormation::Stack
-#     Properties:
-#       TemplateURL: !Sub "${TemplatesURL}vpc.yaml"
-#       Parameters:
-#         EnvironmentName: !Ref EnvironmentName
-#         VpcCidr: !Ref VpcCidr
-#         PublicSubnetCIDRs: !Join [',', !Ref PublicSubnetCIDRs]
-#         PrivateSubnetCIDRs: !Join [',', !Ref PrivateSubnetCIDRs]
-#         AvailabilityZones: !Join [',', !Ref AvailabilityZones]
+Resources:
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplatesURL}vpc.yaml"
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
+        VpcCidr: !Ref VpcCidr
+        PublicSubnetCIDRs: !Join [',', !Ref PublicSubnetCIDRs]
+        PrivateSubnetCIDRs: !Join [',', !Ref PrivateSubnetCIDRs]
+        AvailabilityZones: !Join [',', !Ref AvailabilityZones]
 
 #   SecurityStack:
 #     Type: AWS::CloudFormation::Stack
