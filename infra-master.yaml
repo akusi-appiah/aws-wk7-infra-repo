@@ -24,9 +24,9 @@ Parameters:
     
   ContainerPort:
     Type: Number
-    MinValue: '1'
-    MaxValue: '65535'
-    Default: '3000'
+    MinValue: 1
+    MaxValue: 65535
+    Default: 3000
     
   ECSAppName:
     Type: String
@@ -37,9 +37,9 @@ Parameters:
     Default: "taskman-app"
     Description: "Name of the container in ECS task definition"
   
-  DynamoDBTableArn:
+  DynamoDBTableName:
     Type: String
-    Default: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/prod-todo-table"
+    Default: "prod-todo-table"
 
   TemplatesURL:
     Type: String
@@ -53,9 +53,9 @@ Resources:
       Parameters:
         EnvironmentName: !Ref EnvironmentName
         VpcCidr: !Ref VpcCidr
-        PublicSubnetCIDRs: !Join [',', !Ref PublicSubnetCIDRs]
-        PrivateSubnetCIDRs: !Join [',', !Ref PrivateSubnetCIDRs]
-        AvailabilityZones: !Join [',', !Ref AvailabilityZones]
+        PublicSubnetCIDRs: !Ref PublicSubnetCIDRs
+        PrivateSubnetCIDRs: !Ref PrivateSubnetCIDRs
+        AvailabilityZones: !Ref AvailabilityZones
 
   SecurityStack:
     Type: AWS::CloudFormation::Stack
@@ -101,7 +101,7 @@ Resources:
       TemplateURL: !Sub "${TemplatesURL}iam.yaml"
       Parameters:
         EnvironmentName: !Ref EnvironmentName
-        DynamoDBTableArn: !Ref DynamoDBTableArn
+        DynamoDBTableName: !Ref DynamoDBTableName
 
   ECSStack:
     Type: AWS::CloudFormation::Stack
