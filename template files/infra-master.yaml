@@ -77,12 +77,12 @@ Resources:
         EndpointSecurityGroup: !GetAtt SecurityStack.Outputs.EndpointSecurityGroup
         PrivateSubnetIds: !GetAtt VPCStack.Outputs.PrivateSubnets
 
-  # S3Stack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: !Sub "${TemplatesURL}s3.yaml"
-  #     Parameters:
-  #       EnvironmentName: !Ref EnvironmentName
+  S3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplatesURL}s3.yaml"
+      Parameters:
+        EnvironmentName: !Ref EnvironmentName
 
   ALBStack:
     Type: AWS::CloudFormation::Stack
@@ -146,7 +146,7 @@ Resources:
         TaskDefinitionArn: !GetAtt ECSStack.Outputs.TaskDefinitionArn
         CodeDeployApplication: !GetAtt CodeDeployStack.Outputs.CodeDeployApplicationName
         CodeDeployServiceRoleArn: !GetAtt IAMStack.Outputs.CodeDeployRoleArn
-        # ArtifactsBucketName: !GetAtt S3Stack.Outputs.ArtifactsBucketName
+        ArtifactsBucketName: !GetAtt S3Stack.Outputs.ArtifactsBucketName
         ECSClusterName: !GetAtt ECSStack.Outputs.ECSClusterName
         ECSServiceName: !GetAtt ECSStack.Outputs.ECSServiceName
 

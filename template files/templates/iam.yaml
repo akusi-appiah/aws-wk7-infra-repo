@@ -1,0 +1,123 @@
+Description: 'IAM roles defined for TaskExecution and CodeDeploy'
+
+Parameters:
+  EnvironmentName: { Type: String }
+  DynamoDBTableName:  # Replaced DynamoDBTableArn with TableName
+    Type: String
+    Default: prod-todo-table  # Simple string default (no intrinsic function)
+
+  # DynamoDBTableArn: { Type: String, Default: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/prod-todo-table" }
+
+Resources:
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "ecs-task-execution-${EnvironmentName}"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: ecs-tasks.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ECRAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                Resource: "*"
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Scan
+                  - dynamodb:DescribeTable
+                Resource: 
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${DynamoDBTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${DynamoDBTableName}/*"
+        - PolicyName: S3Access
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource: 
+                  - !Sub "arn:aws:s3:::taskman-${EnvironmentName}-${AWS::AccountId}"
+                  - !Sub "arn:aws:s3:::taskman-${EnvironmentName}-${AWS::AccountId}/*"
+
+        - PolicyName: LoggingAccess
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  # -- Application Auto Scaling Role --
+  ApplicationAutoscalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: application-autoscaling.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AppAutoscalingPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecs:UpdateService
+                  - ecs:DescribeServices
+                  - cloudwatch:PutMetricAlarm
+                  - cloudwatch:DescribeAlarms
+                  - application-autoscaling:*
+                Resource: '*'
+
+  CodeDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub codedeploy-${EnvironmentName}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: codedeploy.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS
+      Policies:
+      - PolicyName: CustomECSPermissions
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ecs:*
+                - elasticloadbalancing:*
+                - cloudwatch:*
+                - s3:*
+                - iam:PassRole
+              Resource: "*"
+
+Outputs:
+  TaskExecutionRoleArn:
+    Value: !GetAtt TaskExecutionRole.Arn
+  ApplicationAutoscalingRoleArn:
+    Value: !GetAtt ApplicationAutoscalingRole.Arn
+  CodeDeployRoleArn:
+    Value: !GetAtt CodeDeployRole.Arn

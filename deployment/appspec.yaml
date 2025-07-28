@@ -3,7 +3,7 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: "<TASK_DEFINITION_ARN>"
+        TaskDefinition: "arn:aws:ecs:eu-west-1:796973518232:task-definition/taskman-app-task"
         LoadBalancerInfo:
           ContainerName: "taskman-app"
           ContainerPort: 3000

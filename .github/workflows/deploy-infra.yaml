@@ -23,8 +23,6 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
         mask-aws-account-id: no
-        # role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubOIDCRole
-        # aws-region: ${{ secrets.AWS_REGION }}
         
     - name: Create S3 bucket if not exists
       id: create-bucket
@@ -67,15 +65,15 @@ jobs:
       run: rm -f deployment-files.zip
 
 
-    - name: Replace Placeholders in taskdef.json
-      run: |
-        sed -i "s|<TASK_EXECUTION_ROLE_ARN>|${{ secrets.TASK_EXECUTION_ROLE_ARN }}|g" deployment/taskdef.json
-        sed -i "s|<ECR_REPO_URI>|${{ secrets.ECR_REPO_URI }}|g" deployment/taskdef.json
-        sed -i "s|<AWS_REGION>|eu-west-1|g" deployment/taskdef.json
+    # - name: Replace Placeholders in taskdef.json
+    #   run: |
+    #     sed -i "s|<TASK_EXECUTION_ROLE_ARN>|${{ secrets.TASK_EXECUTION_ROLE_ARN }}|g" deployment/taskdef.json
+    #     sed -i "s|<ECR_REPO_URI>|${{ secrets.ECR_REPO_URI }}|g" deployment/taskdef.json
+    #     sed -i "s|<AWS_REGION>|eu-west-1|g" deployment/taskdef.json
 
-    - name: Replace Placeholders in appspec.yaml
-      run: |
-        sed -i "s|<TASK_DEFINITION_ARN>|${{ secrets.TASK_DEFINITION_ARN }}|g" deployment/appspec.yaml
+    # - name: Replace Placeholders in appspec.yaml
+    #   run: |
+    #     sed -i "s|<TASK_DEFINITION_ARN>|${{ secrets.TASK_DEFINITION_ARN }}|g" deployment/appspec.yaml
 
     - name: Zip and Upload Deployment Files to S3
       run: |
