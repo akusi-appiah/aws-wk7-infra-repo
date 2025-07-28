@@ -60,7 +60,12 @@ Resources:
               awslogs-group: !Ref AppLogGroup
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
-
+          HealthCheck:
+            Command: CMD-SHELL curl -f http://localhost:!Ref ContainerPort || exit 1
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
 
   ECSService:
     Type: AWS::ECS::Service
