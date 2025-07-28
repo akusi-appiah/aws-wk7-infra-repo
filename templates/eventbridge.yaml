@@ -1,4 +1,4 @@
-Description: "EventBridge rule to trigger CodePipeline on ECR image push"
+Description: "EventBridge rule to trigger CodePipeline on New ECR image push"
 Parameters:
   ECRRepoArn: { Type: String }
   PipelineName: { Type: String }
