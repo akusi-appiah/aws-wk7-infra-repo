@@ -41,11 +41,9 @@ Resources:
                   - dynamodb:DeleteItem
                   - dynamodb:Scan
                   - dynamodb:DescribeTable
-                  - dynamodb:ListTables
                 Resource: 
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${DynamoDBTableName}"
                   - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${DynamoDBTableName}/*"
-                  
         - PolicyName: S3Access
           PolicyDocument:
             Statement:
