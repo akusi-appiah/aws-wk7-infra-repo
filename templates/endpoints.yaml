@@ -1,4 +1,4 @@
-Description: 'S3Gateway,ECRDocker,ECRApi,CloudWatchLogs and SecretsManager Endpoints'
+Description: 'S3Gateway,ECRDocker,ECRApi,CloudWatchLogs Endpoints'
 
 Parameters:
   VpcId: { Type: String }
