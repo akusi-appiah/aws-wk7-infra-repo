@@ -1,4 +1,4 @@
-Description: 'AWS CodeDeploy for ECS Blue/Green Deployment'
+Description: 'AWS CodeDeploy framework for ECS Blue/Green Deployment'
 
 Parameters:
   ECSAppName: { Type: String }
